@@ -2,6 +2,10 @@
 
 Run self-hosted Supabase Auth, REST, Realtime, Storage and Studio on Kubernetes using the upstream self-hosted/v0.8.1 images and the Wodby Supabase chart.
 
+## Use this service
+
+Use this service through the [Supabase stack](https://github.com/wodby/stack-supabase).
+
 ## Configuration
 
 Connect a Supabase PostgreSQL service through the required `db` link. Supply a site URL, email sender address and SMTP integration. The public Supabase URL follows the Wodby service's canonical route. Update the application's redirect allowlist deliberately when adding a custom domain.
@@ -25,3 +29,7 @@ The chart bootstrap job derives credentials from persistent source tokens. Routi
 This service represents one self-hosted Supabase project per Wodby app environment. It uses one replica per component. Edge Functions, Supavisor, Supabase analytics, MCP access and database HA are not included. Studio features relying on omitted services are unavailable. Supabase Cloud organization management, branching and managed PITR are separate products.
 
 Upgrade the tested component bundle together. PostgreSQL-major upgrades and migration from an existing Supabase deployment require a separately validated procedure. A Helm rollback cannot reverse database migrations.
+
+## Maintain a custom version
+
+Fork this repository, update the manifest and referenced configuration, and validate the complete Supabase bundle before importing your service.
