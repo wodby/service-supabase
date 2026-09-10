@@ -20,6 +20,8 @@ SMTP uses the generic SMTP integration. Optional S3 storage uses a variable inte
 
 The `storage` volume contains filesystem-backed objects. The `studio` volume contains snippets. Database metadata and stored objects must be backed up as a coordinated recovery point with application writers stopped. The filesystem objects backup does not back up an external S3 bucket.
 
+The linked database service uses the released `wodby/supabase-postgres:17-0.1.0` image. Its native import restores a checksummed backup into a fresh database volume, including the root encryption key. Restore the matching filesystem or S3 objects separately before resuming application writers.
+
 Save all service tokens and the linked database tokens as recovery material. Preserve encryption keys when restoring data. Environment copying preserves token values: rotate client credentials deliberately after copying when isolation requires it, while retaining keys needed to read copied encrypted data.
 
 The chart bootstrap job derives credentials from persistent source tokens. Routine restarts and upgrades retain public API keys and signing keys. Rotate signing seeds separately from API keys; encryption-key rotation requires a supported data migration.

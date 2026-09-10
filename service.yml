@@ -144,7 +144,7 @@ helm:
   name: wodby
   source: oci://registry-1.docker.io/wodby/supabase
   chart: oci://registry-1.docker.io/wodby/supabase
-  version: 0.1.0
+  version: 0.1.1
   valueMappings:
     serviceAccountName: serviceAccount.name
     serviceAccountCreate: serviceAccount.create
