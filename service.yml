@@ -1,0 +1,398 @@
+name: supabase
+title: Supabase
+icon: supabase
+type: service
+scalable: false
+labels:
+- supabase
+options:
+- version: 0.8.1
+  default: true
+endpoints:
+- name: http
+  ports:
+  - name: http
+    number: 8000
+    protocol: http
+    main: true
+links:
+- name: db
+  title: Supabase PostgreSQL
+  required: true
+  selectors:
+  - type: db
+    labels:
+    - supabase-postgres
+    option: '17'
+  helm:
+  - name: credentials.POSTGRES_HOST
+    value: '{{link.host}}'
+  - name: credentials.POSTGRES_PORT
+    value: '{{link.port}}'
+  - name: credentials.POSTGRES_DB
+    value: postgres
+  - name: credentials.POSTGRES_PASSWORD
+    value: '{{link.tokens.postgres_password}}'
+  - name: credentials.JWT_SECRET
+    value: '{{link.tokens.jwt_secret}}'
+tokens:
+- name: signing_seed
+  generate:
+    regex: '[a-z0-9]{64}'
+- name: dashboard_password
+  generate:
+    regex: '[a-z0-9]{32}'
+- name: secret_key_base
+  generate:
+    regex: '[a-z0-9]{64}'
+- name: realtime_db_enc_key
+  generate:
+    regex: '[a-z0-9]{16}'
+- name: pg_meta_crypto_key
+  generate:
+    regex: '[a-z0-9]{32}'
+- name: publishable_key
+  generate:
+    regex: sb_publishable_[a-zA-Z0-9_-]{40}
+- name: secret_key
+  generate:
+    regex: sb_secret_[a-zA-Z0-9_-]{40}
+settings:
+- name: site_url
+  title: Application site URL
+  default: ''
+  required: true
+  var: ''
+- name: redirect_urls
+  title: Additional allowed redirect URLs
+  default: ''
+  var: ''
+- name: disable_signup
+  title: Disable new signups
+  default: 'false'
+  var: ''
+- name: db_schemas
+  title: Exposed database schemas
+  default: public,storage,graphql_public
+  var: ''
+- name: smtp_sender_email
+  title: Email sender address
+  default: ''
+  required: true
+  var: ''
+- name: smtp_sender_name
+  title: Email sender name
+  default: Supabase
+  var: ''
+- name: storage_bucket
+  title: S3 bucket
+  default: stub
+  var: ''
+- name: s3_endpoint
+  title: S3 endpoint URL
+  default: ''
+  var: ''
+integrations:
+- name: smtp
+  title: Authentication email
+  type: smtp
+  required: true
+- name: s3
+  title: S3 object storage
+  type: variable
+  variables:
+  - name: AWS_ACCESS_KEY_ID
+  - name: AWS_SECRET_ACCESS_KEY
+    secret: true
+  - name: AWS_REGION
+  env:
+  - name: AWS_ACCESS_KEY_ID
+    value: '{{integration.variables.AWS_ACCESS_KEY_ID}}'
+  - name: AWS_SECRET_ACCESS_KEY
+    value: '{{integration.variables.AWS_SECRET_ACCESS_KEY}}'
+    secret: true
+  - name: REGION
+    value: '{{integration.variables.AWS_REGION}}'
+  - name: STORAGE_BACKEND
+    value: s3
+volumes:
+- name: storage
+  title: Storage objects
+  size: 10
+  helm:
+    labels: storage.persistence.labels
+    values:
+    - name: storage.persistence.enabled
+      value: true
+    - name: storage.persistence.existingClaim
+      value: '{{volumes.storage.claim}}'
+    - name: storage.persistence.size
+      value: '{{volumes.storage.size}}Gi'
+- name: studio
+  title: Studio snippets
+  size: 1
+  helm:
+    labels: studio.persistence.labels
+    values:
+    - name: studio.persistence.enabled
+      value: true
+    - name: studio.persistence.existingClaim
+      value: '{{volumes.studio.claim}}'
+    - name: studio.persistence.size
+      value: '{{volumes.studio.size}}Gi'
+helm:
+  name: wodby
+  source: oci://registry-1.docker.io/wodby/supabase
+  chart: oci://registry-1.docker.io/wodby/supabase
+  version: 0.1.0
+  valueMappings:
+    serviceAccountName: serviceAccount.name
+    serviceAccountCreate: serviceAccount.create
+  values:
+  - name: config.publicUrl
+    value: '{{service.primaryURL}}'
+  - name: credentials.SIGNING_SEED
+    value: '{{signing_seed}}'
+  - name: credentials.DASHBOARD_PASSWORD
+    value: '{{dashboard_password}}'
+  - name: credentials.SECRET_KEY_BASE
+    value: '{{secret_key_base}}'
+  - name: credentials.REALTIME_DB_ENC_KEY
+    value: '{{realtime_db_enc_key}}'
+  - name: credentials.PG_META_CRYPTO_KEY
+    value: '{{pg_meta_crypto_key}}'
+  - name: credentials.SUPABASE_PUBLISHABLE_KEY
+    value: '{{publishable_key}}'
+  - name: credentials.SUPABASE_SECRET_KEY
+    value: '{{secret_key}}'
+  - name: config.siteUrl
+    value: '{{settings.site_url}}'
+  - name: config.additionalRedirectUrls
+    value: '{{settings.redirect_urls}}'
+  - name: config.disableSignup
+    value: '{{settings.disable_signup}}'
+  - name: config.dbSchemas
+    value: '{{settings.db_schemas}}'
+  - name: config.smtpSenderEmail
+    value: '{{settings.smtp_sender_email}}'
+  - name: config.smtpSenderName
+    value: '{{settings.smtp_sender_name}}'
+  - name: storage.bucket
+    value: '{{settings.storage_bucket}}'
+  - name: storage.s3Endpoint
+    value: '{{settings.s3_endpoint}}'
+workloads:
+- name: gateway
+  kind: deployment
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: '{{helm.release}}'
+      app.kubernetes.io/component: gateway
+  helm:
+    labels: components.gateway.podLabels
+    annotations: components.gateway.podAnnotations
+    volumes: components.gateway.extraVolumes
+    sidecars: components.gateway.sidecars
+    strategy: components.gateway.strategy
+    minReady: components.gateway.minReadySeconds
+    progressDeadline: components.gateway.progressDeadlineSeconds
+    shutdownGracePeriod: components.gateway.terminationGracePeriodSeconds
+  containers:
+  - name: gateway
+    image: envoyproxy/envoy:v1.39.1
+    helm:
+      env: integrationEnv
+      resources: components.gateway.resources
+      mounts: components.gateway.extraVolumeMounts
+      image:
+        repository: components.gateway.image.repository
+        tag: components.gateway.image.tag
+        registry: ''
+        pullPolicy: components.gateway.image.pullPolicy
+  primary: true
+- name: auth
+  kind: deployment
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: '{{helm.release}}'
+      app.kubernetes.io/component: auth
+  helm:
+    labels: components.auth.podLabels
+    annotations: components.auth.podAnnotations
+    volumes: components.auth.extraVolumes
+    sidecars: components.auth.sidecars
+    strategy: components.auth.strategy
+    minReady: components.auth.minReadySeconds
+    progressDeadline: components.auth.progressDeadlineSeconds
+    shutdownGracePeriod: components.auth.terminationGracePeriodSeconds
+  containers:
+  - name: auth
+    image: supabase/gotrue:v2.196.0
+    helm:
+      env: components.auth.env
+      resources: components.auth.resources
+      mounts: components.auth.extraVolumeMounts
+      image:
+        repository: components.auth.image.repository
+        tag: components.auth.image.tag
+        registry: ''
+        pullPolicy: components.auth.image.pullPolicy
+- name: rest
+  kind: deployment
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: '{{helm.release}}'
+      app.kubernetes.io/component: rest
+  helm:
+    labels: components.rest.podLabels
+    annotations: components.rest.podAnnotations
+    volumes: components.rest.extraVolumes
+    sidecars: components.rest.sidecars
+    strategy: components.rest.strategy
+    minReady: components.rest.minReadySeconds
+    progressDeadline: components.rest.progressDeadlineSeconds
+    shutdownGracePeriod: components.rest.terminationGracePeriodSeconds
+  containers:
+  - name: rest
+    image: postgrest/postgrest:v14.17
+    helm:
+      env: components.rest.env
+      resources: components.rest.resources
+      mounts: components.rest.extraVolumeMounts
+      image:
+        repository: components.rest.image.repository
+        tag: components.rest.image.tag
+        registry: ''
+        pullPolicy: components.rest.image.pullPolicy
+- name: realtime
+  kind: deployment
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: '{{helm.release}}'
+      app.kubernetes.io/component: realtime
+  helm:
+    labels: components.realtime.podLabels
+    annotations: components.realtime.podAnnotations
+    volumes: components.realtime.extraVolumes
+    sidecars: components.realtime.sidecars
+    strategy: components.realtime.strategy
+    minReady: components.realtime.minReadySeconds
+    progressDeadline: components.realtime.progressDeadlineSeconds
+    shutdownGracePeriod: components.realtime.terminationGracePeriodSeconds
+  containers:
+  - name: realtime
+    image: supabase/realtime:v2.134.10
+    helm:
+      env: components.realtime.env
+      resources: components.realtime.resources
+      mounts: components.realtime.extraVolumeMounts
+      image:
+        repository: components.realtime.image.repository
+        tag: components.realtime.image.tag
+        registry: ''
+        pullPolicy: components.realtime.image.pullPolicy
+- name: storage
+  kind: deployment
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: '{{helm.release}}'
+      app.kubernetes.io/component: storage
+  helm:
+    labels: components.storage.podLabels
+    annotations: components.storage.podAnnotations
+    volumes: components.storage.extraVolumes
+    sidecars: components.storage.sidecars
+    strategy: components.storage.strategy
+    minReady: components.storage.minReadySeconds
+    progressDeadline: components.storage.progressDeadlineSeconds
+    shutdownGracePeriod: components.storage.terminationGracePeriodSeconds
+  containers:
+  - name: storage
+    image: supabase/storage-api:v1.74.0
+    helm:
+      env: components.storage.env
+      resources: components.storage.resources
+      mounts: components.storage.extraVolumeMounts
+      image:
+        repository: components.storage.image.repository
+        tag: components.storage.image.tag
+        registry: ''
+        pullPolicy: components.storage.image.pullPolicy
+  - name: imgproxy
+    image: darthsim/imgproxy:v3.31.4
+    helm:
+      env: components.storage.imgproxy.env
+      resources: components.storage.imgproxy.resources
+      mounts: components.storage.imgproxy.extraVolumeMounts
+      image:
+        repository: components.storage.imgproxy.image.repository
+        tag: components.storage.imgproxy.image.tag
+        registry: ''
+        pullPolicy: components.storage.imgproxy.image.pullPolicy
+- name: meta
+  kind: deployment
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: '{{helm.release}}'
+      app.kubernetes.io/component: meta
+  helm:
+    labels: components.meta.podLabels
+    annotations: components.meta.podAnnotations
+    volumes: components.meta.extraVolumes
+    sidecars: components.meta.sidecars
+    strategy: components.meta.strategy
+    minReady: components.meta.minReadySeconds
+    progressDeadline: components.meta.progressDeadlineSeconds
+    shutdownGracePeriod: components.meta.terminationGracePeriodSeconds
+  containers:
+  - name: meta
+    image: supabase/postgres-meta:v0.99.0
+    helm:
+      env: components.meta.env
+      resources: components.meta.resources
+      mounts: components.meta.extraVolumeMounts
+      image:
+        repository: components.meta.image.repository
+        tag: components.meta.image.tag
+        registry: ''
+        pullPolicy: components.meta.image.pullPolicy
+- name: studio
+  kind: deployment
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: '{{helm.release}}'
+      app.kubernetes.io/component: studio
+  helm:
+    labels: components.studio.podLabels
+    annotations: components.studio.podAnnotations
+    volumes: components.studio.extraVolumes
+    sidecars: components.studio.sidecars
+    strategy: components.studio.strategy
+    minReady: components.studio.minReadySeconds
+    progressDeadline: components.studio.progressDeadlineSeconds
+    shutdownGracePeriod: components.studio.terminationGracePeriodSeconds
+  containers:
+  - name: studio
+    image: supabase/studio:2026.09.07-sha-7996410
+    helm:
+      env: components.studio.env
+      resources: components.studio.resources
+      mounts: components.studio.extraVolumeMounts
+      image:
+        repository: components.studio.image.repository
+        tag: components.studio.image.tag
+        registry: ''
+        pullPolicy: components.studio.image.pullPolicy
+backups:
+- name: objects
+  title: Storage objects (filesystem backend)
+  workload: storage
+  upload:
+    dir: /var/lib/storage
+    gzip: true
+- name: snippets
+  title: Studio snippets
+  workload: studio
+  upload:
+    dir: /app/snippets
+    gzip: true
