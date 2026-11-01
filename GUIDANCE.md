@@ -30,7 +30,7 @@ The required `db` link accepts only the Supabase PostgreSQL service. Through it 
 
 Configuration is changed on the service, not in component files:
 
-- Settings: `site_url` (required), `redirect_urls`, `disable_signup`, `db_schemas` (schemas exposed by the API), `smtp_sender_email` (required), `smtp_sender_name`, `storage_bucket`, `s3_endpoint`.
+- Settings: `site_url` (the application's URL, where users land after email links and sign-in; if empty, the public Supabase URL is used, which opens Studio), `redirect_urls`, `disable_signup`, `db_schemas` (schemas exposed by the API), `smtp_sender_email` (required), `smtp_sender_name`, `storage_bucket`, `s3_endpoint`.
 - Integration `smtp` (required) sends the authentication email.
 - Integration `s3` (optional) switches Storage to an S3 bucket: it sets `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `REGION` and `STORAGE_BACKEND`. The bucket named in `storage_bucket` must already exist; `s3_endpoint` is for storage other than AWS. Objects already on the volume are not moved.
 
