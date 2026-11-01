@@ -8,7 +8,7 @@ Use this service through the [Supabase stack](https://github.com/wodby/stack-sup
 
 ## Configuration
 
-Connect a Supabase PostgreSQL service through the required `db` link. Supply a site URL, email sender address and SMTP integration. The public Supabase URL follows the Wodby service's canonical route. Update the application's redirect allowlist deliberately when adding a custom domain.
+Connect a Supabase PostgreSQL service through the required `db` link. Supply an email sender address and SMTP integration, and set the site URL to your application's URL. Without a site URL, email links and sign-in end on the public Supabase URL, which opens Studio. The public Supabase URL follows the Wodby service's canonical route. Update the application's redirect allowlist deliberately when adding a custom domain.
 
 The service creates persistent per-environment tokens for API access, signing, Studio login and component encryption. The Studio username is `supabase`; reveal the `dashboard_password` token to obtain its password. Client applications use the public URL and `publishable_key`; trusted server applications can use `secret_key`. Server keys bypass ordinary user RLS restrictions and must never be included in a browser build.
 

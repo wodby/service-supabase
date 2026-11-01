@@ -61,8 +61,9 @@ tokens:
 settings:
 - name: site_url
   title: Application site URL
+  description: Where users land after email links and sign-in. Set it to your application's URL. If empty, the public Supabase URL is used, which opens Studio.
+  placeholder: https://app.example.com
   default: ''
-  required: true
   var: ''
 - name: redirect_urls
   title: Additional allowed redirect URLs
@@ -74,6 +75,7 @@ settings:
   var: ''
 - name: db_schemas
   title: Exposed database schemas
+  description: Schemas the API can reach. Keep the default unless your application uses a custom schema.
   default: public,storage,graphql_public
   var: ''
 - name: smtp_sender_email
@@ -145,7 +147,7 @@ helm:
   name: wodby
   source: oci://registry-1.docker.io/wodby/supabase
   chart: oci://registry-1.docker.io/wodby/supabase
-  version: 0.1.1
+  version: 0.2.0
   valueMappings:
     serviceAccountName: serviceAccount.name
     serviceAccountCreate: serviceAccount.create
