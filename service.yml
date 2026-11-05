@@ -203,6 +203,10 @@ workloads:
   containers:
   - name: gateway
     image: envoyproxy/envoy:v1.39.1
+    resources:
+      request:
+        cpu: 100
+        memory: 256
     helm:
       env: integrationEnv
       resources: components.gateway.resources
@@ -231,6 +235,10 @@ workloads:
   containers:
   - name: auth
     image: supabase/gotrue:v2.196.0
+    resources:
+      request:
+        cpu: 100
+        memory: 256
     helm:
       env: components.auth.env
       resources: components.auth.resources
@@ -258,6 +266,10 @@ workloads:
   containers:
   - name: rest
     image: postgrest/postgrest:v14.17
+    resources:
+      request:
+        cpu: 100
+        memory: 256
     helm:
       env: components.rest.env
       resources: components.rest.resources
@@ -285,6 +297,10 @@ workloads:
   containers:
   - name: realtime
     image: supabase/realtime:v2.134.10
+    resources:
+      request:
+        cpu: 100
+        memory: 256
     helm:
       env: components.realtime.env
       resources: components.realtime.resources
@@ -312,6 +328,10 @@ workloads:
   containers:
   - name: storage
     image: supabase/storage-api:v1.74.0
+    resources:
+      request:
+        cpu: 100
+        memory: 256
     helm:
       env: components.storage.env
       resources: components.storage.resources
@@ -323,6 +343,10 @@ workloads:
         pullPolicy: components.storage.image.pullPolicy
   - name: imgproxy
     image: darthsim/imgproxy:v3.31.4
+    resources:
+      request:
+        cpu: 100
+        memory: 128
     helm:
       env: components.storage.imgproxy.env
       resources: components.storage.imgproxy.resources
@@ -350,6 +374,10 @@ workloads:
   containers:
   - name: meta
     image: supabase/postgres-meta:v0.99.0
+    resources:
+      request:
+        cpu: 100
+        memory: 256
     helm:
       env: components.meta.env
       resources: components.meta.resources
@@ -377,6 +405,10 @@ workloads:
   containers:
   - name: studio
     image: supabase/studio:2026.09.07-sha-7996410
+    resources:
+      request:
+        cpu: 100
+        memory: 256
     helm:
       env: components.studio.env
       resources: components.studio.resources
