@@ -269,7 +269,7 @@ workloads:
     resources:
       request:
         cpu: 10
-        memory: 16
+        memory: 32
     helm:
       env: components.rest.env
       resources: components.rest.resources
@@ -300,7 +300,7 @@ workloads:
     resources:
       request:
         cpu: 10
-        memory: 208
+        memory: 224
     helm:
       env: components.realtime.env
       resources: components.realtime.resources
@@ -377,7 +377,7 @@ workloads:
     resources:
       request:
         cpu: 10
-        memory: 112
+        memory: 128
     helm:
       env: components.meta.env
       resources: components.meta.resources
@@ -408,7 +408,7 @@ workloads:
     resources:
       request:
         cpu: 10
-        memory: 224
+        memory: 256
     helm:
       env: components.studio.env
       resources: components.studio.resources
