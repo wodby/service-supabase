@@ -431,3 +431,24 @@ backups:
   upload:
     dir: /app/snippets
     gzip: true
+imports:
+- name: objects
+  title: Storage objects (filesystem backend)
+  workload: storage
+  volume: storage
+  destination: /var/lib/storage
+  extensions:
+  - tar.gz
+  - tgz
+  - tar
+  - zip
+- name: snippets
+  title: Studio snippets
+  workload: studio
+  volume: studio
+  destination: /app/snippets
+  extensions:
+  - tar.gz
+  - tgz
+  - tar
+  - zip
