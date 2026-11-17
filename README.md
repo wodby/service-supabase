@@ -20,7 +20,7 @@ SMTP uses the generic SMTP integration. Optional S3 storage uses a variable inte
 
 The `storage` volume contains filesystem-backed objects. The `studio` volume contains snippets. Database metadata and stored objects must be backed up as a coordinated recovery point with application writers stopped. The filesystem objects backup does not back up an external S3 bucket.
 
-The linked database service uses the released `wodby/supabase-postgres:17-0.1.0` image. Its native import restores a checksummed backup into a fresh database volume, including the root encryption key. Restore the matching filesystem or S3 objects separately before resuming application writers.
+The linked database service uses the released `wodby/supabase-postgres:17-0.1.0` image. Its native import restores a checksummed backup into a fresh database volume, including the root encryption key. The `objects` and `snippets` imports replace the content of the `storage` and `studio` volumes with a backup or archive of the same layout; restore objects together with the database backup taken at the same point, before resuming application writers. Objects in an external S3 bucket are restored separately.
 
 Save all service tokens and the linked database tokens as recovery material. Preserve encryption keys when restoring data. Environment copying preserves token values: rotate client credentials deliberately after copying when isolation requires it, while retaining keys needed to read copied encrypted data.
 

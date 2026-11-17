@@ -40,4 +40,5 @@ A new redirect target, such as a custom domain of the application, has to be add
 
 - Volume `storage`: objects of the filesystem storage backend. Volume `studio`: Studio snippets.
 - Backups `objects` (storage volume) and `snippets` (Studio volume). An S3 bucket is not backed up by Wodby.
+- Imports `objects` and `snippets` replace the whole content of the storage and Studio volumes with the archive, removing files that are not in it. Restore `objects` together with the database backup from the same point; files without database metadata are not visible, and metadata without files fails on download.
 - Table data, users and storage metadata are in the linked database and are backed up there. A consistent recovery point needs the database backup, the objects and this service's tokens together.
